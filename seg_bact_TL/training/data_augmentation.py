@@ -2,7 +2,6 @@ from random import getrandbits, uniform
 import numpy as np
 import dataset_iterator.helpers as dih
 import numpy as np
-from distnet.utils.pre_processing import get_histogram_normalization_center_scale_ranges
 
 def get_histogram_normalization_center_scale_ranges(histogram, bins, center_percentile_extent, scale_percentile_range, verbose=False):
     assert dih is not None, "dataset_iterator package is required for this method"
@@ -36,7 +35,7 @@ def get_center_scale_range(dataset, raw_feature_name = "/raw", fluoresence=False
         print("mean: {} sd: {}".format(mean, sd))
         print("center: [{}; {}] / scale: [{}; {}]".format(center_range[0]- sd, center_range[0] + sd, sd*0.5, sd*2))
         return [center_range[0]- 3*sd, center_range[0] + 3*sd], [sd/3., sd*3]
-        
+
 def random_gaussian_blur(img, sig_min=1, sig_max=2):
     sig = uniform(sig_min, sig_max)
     return gaussian_blur(img, sig)

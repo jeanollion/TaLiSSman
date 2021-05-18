@@ -21,7 +21,7 @@ def get_train_test_iterators(dataset,
     center_range, scale_range,
     tile_params = dict(tile_shape=(256, 256), n_tiles=9, zoom_range=[0.6, 1.6], aspect_ratio_range=[0.75, 1.5] ),
     elasticdeform_parameters = {},
-    raw_feature_name="/raw", label_feature_name="/regionLabels"
+    raw_feature_name="/raw", label_feature_name="/regionLabels",
     training_selection_name="train/", validation_selection_name="eval/" ):
 
     extract_tile_function = extract_tile_random_zoom_function(**tile_params) if tile_params is not None else None
@@ -59,7 +59,7 @@ def get_train_test_iterators(dataset,
     test_it = MultiChannelIterator(group_keyword=validation_selection_name, **params)
     return train_it, test_it
 
-def get_model(model_params=dict(n_filters=64, n_z=11), learning_rate = 2e-4, saved_weights_file=None):
+def get_model(model_params=dict(), learning_rate = 2e-4, saved_weights_file=None):
     model = get_unet(**model_params)
     if saved_weights_file is not None:
         model.load_weights(saved_weights_file)
