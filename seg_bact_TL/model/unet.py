@@ -2,8 +2,9 @@ from tensorflow.keras.layers import Conv2D, Conv3D, Input, MaxPool2D, MaxPool3D,
 from tensorflow.keras.models import Model
 import tensorflow as tf
 from .padding import PaddingYX3D
+import math
 
-def get_unet(n_filters=64, depth=4, n_z=1, conv_channel=True, conv_z=True, stride_z=1, name = "unet"):
+def get_unet(n_filters=64, depth=4, n_z=1, conv_channel=True, conv_z=True, stride_z=3, name = "unet"):
     input = Input(shape = (None, None, n_z ), name=name+"_input")
     residual = []
     downsampled = [input]
@@ -59,6 +60,7 @@ def reduceConv3D_block(input, n_z, n_filters, stride_z, name="unet"):
     conv = tf.expand_dims(input, axis=-1) # add a channel axis
     last_op_conv=False
     nz=n_z
+    sz = stride_z
     i=0
     while nz>1:
         if not last_op_conv:
@@ -67,11 +69,11 @@ def reduceConv3D_block(input, n_z, n_filters, stride_z, name="unet"):
             nz=nz-2
             last_op_conv=True
         else:
-            if nz-2>=stride_z:
-                stride_z=1 
-            conv = MaxPool3D(pool_size = (3, 1, 1)if nz>=3 else (2, 1, 1), strides=(stride_z, 1, 1) if nz-2>=stride_z else 1, padding='valid', name=name+"pool3D_{}".format(i//2))(conv)
+            if nz-2<=stride_z:
+                sz=max(sz-1, 1)
+            conv = MaxPool3D(pool_size = (3, 1, 1)if nz>=3 else (2, 1, 1), strides=(sz, 1, 1), padding='valid', name=name+"pool3D_{}".format(i//2))(conv)
             last_op_conv=False
-            nz = (nz-2)//(stride_z if nz-2>=stride_z else 1) + (nz%stride_z if stride_z>1 else 0)
+            nz = math.ceil((nz-2)/sz)
         i=i+1
         print("op: {}, shape: {}, nz: {}".format(i, tf.shape(conv), nz))
     return tf.squeeze(conv, [1])
