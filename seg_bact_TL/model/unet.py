@@ -75,5 +75,5 @@ def reduceConv3D_block(input, n_z, n_filters, stride_z, name="unet"):
             last_op_conv=False
             nz = math.ceil((nz-2)/sz)
         i=i+1
-        print("op: {}, shape: {}, nz: {}".format(i, tf.shape(conv), nz))
+        # print("op: {}, shape: {}, nz: {}".format(i, tf.shape(conv), nz))
     return tf.squeeze(conv, [1])

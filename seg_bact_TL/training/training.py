@@ -18,7 +18,7 @@ def channels_postpprocessing(fluo_fun, label_fun):
     return fun
 
 def get_train_test_iterators(dataset,
-    center_range, scale_range,
+    center_range, scale_range, n_z=11, z_step=2,
     tile_params = dict(tile_shape=(256, 256), n_tiles=9, zoom_range=[0.6, 1.6], aspect_ratio_range=[0.75, 1.5] ),
     elasticdeform_parameters = {},
     raw_feature_name="/raw", label_feature_name="/regionLabels",
@@ -26,12 +26,18 @@ def get_train_test_iterators(dataset,
 
     extract_tile_function = extract_tile_random_zoom_function(**tile_params) if tile_params is not None else None
     def random_channel_slice(nchan): # random offset on chosen slices to simulate focus variations
-        halfnchan = nchan//2
         nuo=5
-        noff=halfnchan-1-(nuo-1)*2 + 1
+        noff=nchan-1-(n_z-1)*z_step + 1
         off = np.random.randint(noff)
-        idx = [off + 2*i for i in range(nuo)] + [off + 2*i + halfnchan for i in range(nuo)]
+        idx = [off + z_step*i for i in range(n_z)]
         return idx
+    # def random_channel_slice(nchan): # random offset on chosen slices to simulate focus variations
+    #     halfnchan = nchan//2
+    #     nuo=5
+    #     noff=halfnchan-1-(nuo-1)*2 + 1
+    #     off = np.random.randint(noff)
+    #     idx = [off + 2*i for i in range(nuo)] + [off + 2*i + halfnchan for i in range(nuo)]
+    #     return idx
     # def random_channel_slice(nchan):
     #     center = (nchan-1)//2
     #     intervalRange=12
