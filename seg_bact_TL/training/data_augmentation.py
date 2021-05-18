@@ -61,6 +61,6 @@ def get_illumination_aug_fun(center_range, scale_range, gaussian_blur_range, noi
         if getrandbits(1) and gaussian_blur_range is not None:
             img = random_gaussian_blur(img, gaussian_blur_range[0], gaussian_blur_range[1])
         # noise
-        img = pp.add_gaussian_noise(img, noise_sigma)
+        img = add_gaussian_noise(img, noise_sigma)
         return img
     return lambda batch : np.stack([img_fun(batch[i]) for i in range(batch.shape[0])])

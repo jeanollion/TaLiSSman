@@ -18,7 +18,8 @@ def channels_postpprocessing(fluo_fun, label_fun):
     return fun
 
 def get_train_test_iterators(dataset,
-    center_range, scale_range, n_z=11, z_step=2,
+    center_range, scale_range,
+    n_z=11, z_step=2,
     tile_params = dict(tile_shape=(256, 256), n_tiles=9, zoom_range=[0.6, 1.6], aspect_ratio_range=[0.75, 1.5] ),
     elasticdeform_parameters = {},
     raw_feature_name="/raw", label_feature_name="/regionLabels",
