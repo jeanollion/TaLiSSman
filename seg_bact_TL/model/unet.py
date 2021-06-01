@@ -65,13 +65,13 @@ def reduceConv3D_block(input, n_z, n_filters, stride_z, name="unet"):
     while nz>1:
         if not last_op_conv:
             conv = PaddingYX3D((1,1))(conv)
-            conv = Conv3D(filters=n_filters, kernel_size=3 if nz>=3 else (2, 3, 3), padding='valid', activation="relu", name=name+"conv3D_{}".format(i//2))(conv)
+            conv = Conv3D(filters=n_filters, kernel_size=3 if nz>=3 else (2, 3, 3), padding='valid', activation="relu", name=name+"_conv3D_{}".format(i//2))(conv)
             nz=nz-2
             last_op_conv=True
         else:
             if nz-2<=stride_z:
                 sz=max(sz-1, 1)
-            conv = MaxPool3D(pool_size = (3, 1, 1)if nz>=3 else (2, 1, 1), strides=(sz, 1, 1), padding='valid', name=name+"pool3D_{}".format(i//2))(conv)
+            conv = MaxPool3D(pool_size = (3, 1, 1)if nz>=3 else (2, 1, 1), strides=(sz, 1, 1), padding='valid', name=name+"_pool3D_{}".format(i//2))(conv)
             last_op_conv=False
             nz = math.ceil((nz-2)/sz)
         i=i+1

@@ -19,6 +19,7 @@ def channels_postpprocessing(fluo_fun, label_fun):
 
 def get_train_test_iterators(dataset,
     center_range, scale_range,
+    batch_size = 4,
     n_z=11, z_step=2,
     tile_params = dict(tile_shape=(256, 256), n_tiles=9, zoom_range=[0.6, 1.6], aspect_ratio_range=[0.75, 1.5] ),
     elasticdeform_parameters = {},
@@ -58,7 +59,7 @@ def get_train_test_iterators(dataset,
         elasticdeform_parameters = elasticdeform_parameters,
         extract_tile_function = extract_tile_function,
         channels_postprocessing_function = channels_postpprocessing(get_illumination_aug_fun(center_range, scale_range, None, 0.035), get_edt_fun()),
-        batch_size=4,
+        batch_size=batch_size,
         perform_data_augmentation=True,
         shuffle=True)
 
