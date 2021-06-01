@@ -2,6 +2,7 @@ from random import getrandbits, uniform
 import numpy as np
 import dataset_iterator.helpers as dih
 import numpy as np
+from scipy.ndimage.filters import gaussian_filter
 
 def get_histogram_normalization_center_scale_ranges(histogram, bins, center_percentile_extent, scale_percentile_range, verbose=False):
     assert dih is not None, "dataset_iterator package is required for this method"
@@ -36,6 +37,12 @@ def get_center_scale_range(dataset, raw_feature_name = "/raw", fluoresence=False
         print("center: [{}; {}] / scale: [{}; {}]".format(center_range[0]- sd, center_range[0] + sd, sd*0.5, sd*2))
         return [center_range[0]- 3*sd, center_range[0] + 3*sd], [sd/3., sd*3]
 
+def gaussian_blur(img, sig):
+    if len(img.shape)>2 and img.shape[-1]==1:
+        return np.expand_dims(gaussian_filter(img.squeeze(-1), sig), -1)
+    else:
+        return gaussian_filter(img, sig)
+
 def random_gaussian_blur(img, sig_min=1, sig_max=2):
     sig = uniform(sig_min, sig_max)
     return gaussian_blur(img, sig)
@@ -64,3 +71,8 @@ def get_illumination_aug_fun(center_range, scale_range, gaussian_blur_range, noi
         img = add_gaussian_noise(img, noise_sigma)
         return img
     return lambda batch : np.stack([img_fun(batch[i]) for i in range(batch.shape[0])])
+
+################### helpers ##################################
+
+def is_list(l):
+    return isinstance(l, (list, tuple, np.ndarray))
