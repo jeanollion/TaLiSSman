@@ -2,6 +2,7 @@ import warnings
 from time import sleep
 import subprocess
 from tensorflow.keras.callbacks import Callback
+import numpy as np
 
 class PatchedModelCheckpoint(Callback):
     """Save the model after every epoch.
