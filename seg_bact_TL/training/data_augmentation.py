@@ -3,39 +3,65 @@ import numpy as np
 import dataset_iterator.helpers as dih
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
+from ..model.utils import ensure_multiplicity
 
-def get_histogram_normalization_center_scale_ranges(histogram, bins, center_percentile_extent, scale_percentile_range, verbose=False):
+def get_normalization_center_scale_ranges(histogram, bins, center_centile_extent, scale_centile_range, verbose=False):
     assert dih is not None, "dataset_iterator package is required for this method"
     mode_value = dih.get_modal_value(histogram, bins)
-    mode_percentile = dih.get_percentile_from_value(histogram, bins, mode_value)
-    print("model value={}, model percentile={}".format(mode_value, mode_percentile))
-    assert mode_percentile<scale_percentile_range[0], "mode percentile is {} and must be lower than lower bound of scale_percentile_range={}".format(mode_percentile, scale_percentile_range)
-    percentiles = [max(0, mode_percentile-center_percentile_extent), min(100, mode_percentile+center_percentile_extent)]
-    scale_percentile_range = ensure_multiplicity(2, scale_percentile_range)
-    if isinstance(scale_percentile_range, tuple):
-        scale_percentile_range = list(scale_percentile_range)
-    percentiles = percentiles + scale_percentile_range
-    values = dih.get_percentile(histogram, bins, percentiles)
+    mode_centile = dih.get_percentile_from_value(histogram, bins, mode_value)
+    print("model value={}, model centile={}".format(mode_value, mode_centile))
+    assert mode_centile<scale_centile_range[0], "mode centile is {} and must be lower than lower bound of scale_centile_range={}".format(mode_centile, scale_centile_range)
+    centiles = [max(0, mode_centile-center_centile_extent), min(100, mode_centile+center_centile_extent)]
+    scale_centile_range = ensure_multiplicity(2, scale_centile_range)
+    if isinstance(scale_centile_range, tuple):
+        scale_centile_range = list(scale_centile_range)
+    centiles = centiles + scale_centile_range
+    values = dih.get_percentile(histogram, bins, centiles)
     mode_range = [values[0], values[1] ]
     scale_range = [values[2] - mode_value, values[3] - mode_value]
     if verbose:
         print("normalization_center_scale: modal value: {}, center_range: [{}; {}] scale_range: [{}; {}]".format(mode_value, mode_range[0], mode_range[1], scale_range[0], scale_range[1]))
     return mode_range, scale_range
 
-def get_center_scale_range(dataset, raw_feature_name = "/raw", fluoresence=False):
-    bins = dih.get_histogram_bins_IPR(*dih.get_histogram(dataset_path, raw_feature_name, bins=1000), n_bins=256, percentiles=[0, 95], verbose=True)
-    histo, _ = dih.get_histogram(dataset_path, "/raw", bins=bins)
+def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:bool=False, tl_sd_factor:float=3., fluo_centile_range:list=[75, 99.9], fluo_centile_extent:float=5):
+    """Computes a range for center and for scale factor for data augmentation.
+    Image can then be normalized using a random center C in the center range and a random scaling factor in the scale range: I -> (I - C) / S
+
+    Parameters
+    ----------
+    dataset : datasetIO or path
+    raw_feature_name : str
+        name of the dataset
+    fluoresence : bool
+        in fluoresence mode (true):
+            mode M is computed, corresponding to the Mp centile: M = centile(Mp). center_range = [centile(Mp-fluo_centile_extent), centile(Mp+fluo_centile_extent)]
+            scale_range = [centile(fluo_centile_range[0]) - M, centile(fluo_centile_range[0]) + M ]
+        in transmitted light mode (false): center_range = [mean - tl_sd_factor*sd, mean + tl_sd_factor*sd]; scale_range = [sd/tl_sd_factor., sd*tl_sd_factor]
+    tl_sd_factor : float
+        Description of parameter `tl_sd_factor`.
+    fluo_centile_range : list
+        in fluoresence mode, interval for scale range in centiles
+    fluo_centile_extent : float
+        in fluoresence mode, extent for center range in centiles
+    Returns
+    -------
+    scale_range (list(2)) , center_range (list(2))
+
+    """
+
     if fluoresence:
-        center_range, scale_range = get_histogram_normalization_center_scale_ranges(histo, bins, 0, [75, 99.9], verbose=True)
+        bins = dih.get_histogram_bins_IPR(*dih.get_histogram(dataset, raw_feature_name, bins=1000), n_bins=256, percentiles=[0, 95], verbose=True)
+        histo, _ = dih.get_histogram(dataset, "/raw", bins=bins)
+        center_range, scale_range = get_normalization_center_scale_ranges(histo, bins, fluo_centile_extent, fluo_centile_range, verbose=True)
         print("center: [{}; {}] / scale: [{}; {}]".format(center_range[0], center_range[1], scale_range[0], scale_range[1]))
         return center_range, scale_range
     else:
-        mean, sd = dih.get_mean_sd(dataset_path, "/raw", per_channel=True)
+        mean, sd = dih.get_mean_sd(dataset, "/raw", per_channel=True)
         mean, sd = np.mean(mean), np.mean(sd)
-        center_range, scale_range = get_histogram_normalization_center_scale_ranges(histo, bins, 0, [75, 99.9], verbose=True)
         print("mean: {} sd: {}".format(mean, sd))
-        print("center: [{}; {}] / scale: [{}; {}]".format(center_range[0]- sd, center_range[0] + sd, sd*0.5, sd*2))
-        return [center_range[0]- 3*sd, center_range[0] + 3*sd], [sd/3., sd*3]
+        center_range, scale_range = [mean - tl_sd_factor*sd, mean + tl_sd_factor*sd], [sd/tl_sd_factor, sd*tl_sd_factor]
+        print("center: [{}; {}] / scale: [{}; {}]".format(center_range[0], center_range[1], scale_range[0], scale_range[1]))
+        return center_range, scale_range
 
 def gaussian_blur(img, sig):
     if len(img.shape)>2 and img.shape[-1]==1:
@@ -58,7 +84,27 @@ def add_gaussian_noise(img, sigma=0.035, scale_sigma_to_image_range=True):
     gauss = np.random.normal(0,sigma,img.shape)
     return img + gauss
 
-def get_illumination_aug_fun(center_range, scale_range, gaussian_blur_range, noise_sigma):
+def get_illumination_aug_fun(center_range:list, scale_range:list, gaussian_blur_range:list, noise_sigma:float):
+    """Returns illumination augmentation function.
+
+    Parameters
+    ----------
+    center_range : list
+        normalization center C is drawn randomly in interval center_range = [center min, center max]
+    scale_range : list
+        normalization scale S is drawn randomly in interval scale_range = [scale min, scale max]
+    gaussian_blur_range : list
+        gaussian blur sigma is drawn randomly in [sigma_min, sigma_max]
+        if None: no blurring
+    noise_sigma : float
+        noise intensity
+
+    Returns
+    -------
+    function
+        input/output batch (B, Y, X, C), applies random normalization, random gaussian blur and adds random noise to each image YXC
+
+    """
     def img_fun(img):
         # normalization
         center = uniform(center_range[0], center_range[1])

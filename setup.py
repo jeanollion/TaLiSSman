@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Jean Ollion",
     author_email="jean.ollion@polytechnique.org",
-    description="Segmentation of bacteria growing in agar-pads, imaged by transmitted light (stacks)",
+    description="Segmentation of bacteria growing in agar-pads, imaged by transmitted light stacks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jeanollion/seg_bact_TL",
@@ -24,5 +24,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
     python_requires='>=3',
-    install_requires=['numpy', 'scipy', 'tensorflow', 'keras_preprocessing', 'edt==2.0.2', 'dataset_iterator>=0.2.1', 'elasticdeform']
+    install_requires=['numpy', 'scipy', 'tensorflow', 'keras_preprocessing', 'edt==2.0.2', 'dataset_iterator>=0.2.2', 'elasticdeform']
 )

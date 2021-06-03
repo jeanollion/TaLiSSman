@@ -4,7 +4,34 @@ import tensorflow as tf
 from .padding import PaddingYX3D
 import math
 
-def get_unet(n_filters=64, depth=4, n_z=1, conv_channel=True, conv_z=True, stride_z=3, name = "unet"):
+def get_unet(n_filters:int=64, depth:int=4, n_z:int=1, conv_channel:bool=True, conv_z:bool=True, stride_z:int=3, name:str = "unet"):
+    """Creates unet Keras Model with custom depth / filters..
+
+    Parameters
+    ----------
+    n_filters : int
+        number of filters at first level (doubled at each level)
+    depth : int
+        depth of the network (number of contraction / expansions)
+    n_z : int
+        number of z-slices in the input data. The model expects Z-slices at the last dimension (channels)
+    conv_channel : bool
+        whether last dimension should be treated as channels (normal 2D convolution)
+    conv_z : bool
+        whether last dimension should be treated spatially (3D convolutions / 3D maxpooling are added at first level to reduce to 1)
+    stride_z : int
+        if conv_z: stride for 3D maxpooling
+    name : str
+        name of the model
+
+    Returns
+    -------
+    Keras Model
+        Unet with reduction of z dimension at first level
+
+    """
+    if conv_z:
+        assert n_z>1, "conv_z specified but input data has only one z-slice"
     input = Input(shape = (None, None, n_z ), name=name+"_input")
     residual = []
     downsampled = [input]
