@@ -4,17 +4,17 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="Seg_Bact_TLS",
+    name="TaLiSSman",
     version="0.0.1",
     author="Jean Ollion",
     author_email="jean.ollion@polytechnique.org",
     description="Segmentation of bacteria growing in agar-pads, imaged by transmitted light stacks",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jeanollion/seg_bact_TL",
-    download_url = 'https://github.com/jeanollion/seg_bact_TL/archive/v_01.tar.gz',
+    url="https://github.com/jeanollion/talissman",
+    download_url = 'https://github.com/jeanollion/TaLiSSman/archive/v0.0.1.tar.gz',
     packages=setuptools.find_packages(),
-    keywords = ['Segmentation', 'Bacteria', 'Transmitted Light', 'Microscopy'],
+    keywords = ['Segmentation', 'Bacteria', 'Transmitted Light', 'Bright Field', 'Stack', 'Microscopy'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
