@@ -84,15 +84,11 @@ def add_gaussian_noise(img, sigma=0.035, scale_sigma_to_image_range=True):
     gauss = np.random.normal(0,sigma,img.shape)
     return img + gauss
 
-def get_illumination_aug_fun(center_range:list, scale_range:list, gaussian_blur_range:list, noise_sigma:float):
+def get_illumination_aug_fun(gaussian_blur_range:list, noise_sigma:float):
     """Returns illumination augmentation function.
 
     Parameters
     ----------
-    center_range : list
-        normalization center C is drawn randomly in interval center_range = [center min, center max]
-    scale_range : list
-        normalization scale S is drawn randomly in interval scale_range = [scale min, scale max]
     gaussian_blur_range : list
         gaussian blur sigma is drawn randomly in [sigma_min, sigma_max]
         if None: no blurring
@@ -102,14 +98,10 @@ def get_illumination_aug_fun(center_range:list, scale_range:list, gaussian_blur_
     Returns
     -------
     function
-        input/output batch (B, Y, X, C), applies random normalization, random gaussian blur and adds random noise to each image YXC
+        input/output batch (B, Y, X, C), applies random gaussian blur and adds random noise to each image YXC
 
     """
     def img_fun(img):
-        # normalization
-        center = uniform(center_range[0], center_range[1])
-        scale = uniform(scale_range[0], scale_range[1])
-        img = (img - center) / scale
         # blur
         if getrandbits(1) and gaussian_blur_range is not None:
             img = random_gaussian_blur(img, gaussian_blur_range[0], gaussian_blur_range[1])
@@ -118,6 +110,25 @@ def get_illumination_aug_fun(center_range:list, scale_range:list, gaussian_blur_
         return img
     return lambda batch : np.stack([img_fun(batch[i]) for i in range(batch.shape[0])])
 
+def get_normalization_fun(center_range:list, scale_range:list):
+    """Returns Normalization function.
+
+    Parameters
+    ----------
+    center_range : list
+        normalization center C is drawn randomly in interval center_range = [center min, center max]
+    scale_range : list
+        normalization scale S is drawn randomly in interval scale_range = [scale min, scale max]
+
+    Returns
+    -------
+    function
+        input/output batch (B, Y, X, C), applies random normalization
+
+    """
+    center = uniform(center_range[0], center_range[1])
+    scale = uniform(scale_range[0], scale_range[1])
+    img = (img - center) / scale
 ################### helpers ##################################
 
 def is_list(l):

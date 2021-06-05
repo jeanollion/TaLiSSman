@@ -82,11 +82,11 @@ def get_train_test_iterators(dataset,
         for i in range(len(group_keyword)):
             assert len(center_range[i])==2 and len(scale_range[i])==2, "invalid scale_range / center_range"
         assert group_proportion is None or len(group_proportion)==len(group_keyword)
-        scale_fun = [[get_illumination_aug_fun(center_range[i], scale_range[i], None, noise_intensity), None] for i in range(len(group_keyword))]
+        scale_fun = [[get_normalization_fun(center_range[i], scale_range[i]), None] for i in range(len(group_keyword))]
         validation_grp = [_join_grp_kw(validation_selection_name, kw) for kw in group_keyword]
         training_grp = [_join_grp_kw(training_selection_name, kw) for kw in group_keyword]
     else:
-        scale_fun = [[get_illumination_aug_fun(center_range, scale_range, None, noise_intensity), None]]
+        scale_fun = [[get_normalization_fun(center_range, scale_range), None]]
         if group_keyword is None:
             validation_grp = validation_selection_name
             training_grp = training_selection_name
@@ -103,7 +103,7 @@ def get_train_test_iterators(dataset,
         channel_slicing_channels = {0:random_channel_slice},
         elasticdeform_parameters = elasticdeform_parameters,
         extract_tile_function = extract_tile_function,
-        channels_postprocessing_function = _channels_postpprocessing(_get_edt_fun()),
+        channels_postprocessing_function = _channels_postpprocessing(get_illumination_aug_fun(None, noise_intensity), _get_edt_fun()),
         batch_size=batch_size,
         perform_data_augmentation=True,
         shuffle=True)
@@ -115,8 +115,9 @@ def get_train_test_iterators(dataset,
 def _get_edt_fun():
     return lambda labels : np.stack([edt.edt(labels[i,...,0], black_border=False)[...,np.newaxis] for i in range(labels.shape[0])])
 
-def _channels_postpprocessing(label_fun):
+def _channels_postpprocessing(raw_fun, label_fun):
     def fun(batch_by_channel):
+        batch_by_channel[0] = raw_fun(batch_by_channel[0])
         batch_by_channel[1] = label_fun(batch_by_channel[1])
     return fun
 
