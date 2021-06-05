@@ -1,4 +1,5 @@
 import gdown
+import os
 
 def download_dataset(dataset_id, output_dir, overwrite=False):
     if not isinstance(dataset_id, (list, tuple)):
