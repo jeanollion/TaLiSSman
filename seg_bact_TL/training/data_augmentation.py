@@ -131,7 +131,7 @@ def get_normalization_fun(center_range:list, scale_range:list):
         center = uniform(center_range[0], center_range[1])
         scale = uniform(scale_range[0], scale_range[1])
         return (img - center) / scale
-    return lambda batch : np.stack([img_fun(batch[i]) for i in range(batch.shape[0])])
+    return img_fun
 ################### helpers ##################################
 
 def is_list(l):

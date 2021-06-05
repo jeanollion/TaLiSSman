@@ -20,7 +20,8 @@ def get_train_test_iterators(dataset,
     noise_intensity:float = 0.035,
     raw_feature_name:str="/raw", label_feature_name:str="/regionLabels",
     training_selection_name:str="train/", validation_selection_name:str="eval/" ):
-    """Short summary.
+    """Generates image iterators for training/validation.
+    Perform data augmentation: pick random slices, random zoom / random flip / rotate90, add radnom iid gaussian noise / gaussian blur, elastic deformation, random normalization
 
     Parameters
     ----------
