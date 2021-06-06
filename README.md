@@ -9,9 +9,9 @@ Segmentation of bacteria growing in agar-pads, imaged by transmitted light (stac
 
 ## How it works
 - Expected input images are stack of 2D images, with Z-axis last : I = [batch, Y, X, Z]
-- Segmentation is performed by regression of the Euclidean Distance Map.
+- Segmentation is performed by regression of the Euclidean Distance Map (EDM).
 - This repository does not include the downstream watershed step to obtain labeled images.
 
 | Input transmitted-light Stack | Predicted EDM | Segmented Bacteria |
 | :---:         |          :---: |          :---: |
-| <img src="assets/inputStackREV.gif" width="300"> | <img src="assets/edm.png" width="300">    | <img src="assets/outputStackREV.gif" width="300"> |
+| <img src="assets/inputStackREV.gif"> | <img src="assets/edm.png">    | <img src="assets/outputStackREV.gif"> |
