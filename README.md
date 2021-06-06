@@ -14,4 +14,4 @@ Segmentation of bacteria growing in agar-pads, imaged by de-focused transmitted 
 
 | Input transmitted-light Stack | Predicted EDM | Segmented Bacteria |
 | :---:         |          :---: |          :---: |
-| <img src="assets/inputStackREV.gif" width="300"> | <img src="assets/edm.png" width="300">    | <img src="assets/outputStackREV.gif" width="300"> |
+| <img src="wiki/resources/inputStackREV.gif" width="300"> | <img src="wiki/resources/edm.png" width="300">    | <img src="wiki/resources/outputStackREV.gif" width="300"> |
