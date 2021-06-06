@@ -1,14 +1,14 @@
 # TaLiSSman: TrAnsmitted LIght Stack SegMentAtioN
-Segmentation of bacteria growing in agar-pads, imaged by transmitted light (stacks)
+Segmentation of bacteria growing in agar-pads, imaged by de-focused transmitted light stacks
 
 ## Network architecture:
 - Based on U-net
 - At first layer, Z-axis is both:
-  - considered as channel axis with 2D convolutions
-  - reduced using 3D convolutions and 3D maxpooling
+  - Considered as channel axis and treated with with 2D convolutions
+  - Reduced using 3D convolutions and 3D max-pooling
 
 ## How it works
-- Expected input images are stack of 2D images, with Z-axis last : I = [batch, Y, X, Z]
+- Expected input images are stacks of 2D images, with Z-axis last : Image = [batch, Y, X, Z]. We advise stacks of 5 slices with a 0.2µm step, in range [-0.6µm, -1.4µm] (relatively to the focal plane)
 - Segmentation is performed by regression of the Euclidean Distance Map (EDM).
 - This repository does not include the downstream watershed step to obtain labeled images.
 
