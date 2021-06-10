@@ -54,6 +54,8 @@ def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:b
             sr, cr = get_center_scale_range(ds, raw_feature_name, fluoresence, tl_sd_factor, fluo_centile_range, fluo_centile_extent)
             scale_range.append(sr)
             center_range.append(cr)
+        if len(dataset)==1:
+            return scale_range[0], center_range[0]
         return scale_range, center_range
     if fluoresence:
         bins = dih.get_histogram_bins_IPR(*dih.get_histogram(dataset, raw_feature_name, bins=1000), n_bins=256, percentiles=[0, 95], verbose=True)
