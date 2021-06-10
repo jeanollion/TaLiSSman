@@ -29,7 +29,7 @@ def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:b
 
     Parameters
     ----------
-    dataset : datasetIO or path
+    dataset : datasetIO/path(str) OR list/tuple of datasetIO/path(str)
     raw_feature_name : str
         name of the dataset
     fluoresence : bool
@@ -48,7 +48,13 @@ def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:b
     scale_range (list(2)) , center_range (list(2))
 
     """
-
+    if isinstance(dataset, (list, tuple)):
+        scale_range, center_range = [], []
+        for ds in dataset:
+            sr, cr = get_center_scale_range(ds, raw_feature_name, fluoresence, tl_sd_factor, fluo_centile_range, fluo_centile_extent)
+            scale_range.append(sr)
+            center_range.append(cr)
+        return scale_range, center_range
     if fluoresence:
         bins = dih.get_histogram_bins_IPR(*dih.get_histogram(dataset, raw_feature_name, bins=1000), n_bins=256, percentiles=[0, 95], verbose=True)
         histo, _ = dih.get_histogram(dataset, "/raw", bins=bins)
