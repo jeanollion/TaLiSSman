@@ -10,11 +10,13 @@ Segmentation of bacteria growing in agar-pads, imaged by de-focused transmitted 
 | :---:         |          :---: |          :---: |
 | <img src="../../wiki/resources/inputStackREV.gif" width="300"> | <img src="../../wiki/resources/edm.png" width="300">    | <img src="../../wiki/resources/outputStackREV.gif" width="300"> |
 
+Samples provided by Daniel Thédié, <a href="http://www.elkarouilab.fr/">El Karoui Lab</a>, University of Edinburg
+
 ## Network architecture:
 - Based on U-net
-- At first layer, Z-axis is both:
-  - Considered as channel axis and treated with with 2D convolutions
-  - Reduced using 3D convolutions and 3D max-pooling
+- Before first layer a block is added to reduced Z-axis using 3D convolutions and 3D Z-maxpooling
+
+More details can be found on my [website](https://www.sabilab.fr/project/2021/12/21/talissman.html)
 
 ## How to use it
 Check the [wiki](../../wiki)! 
