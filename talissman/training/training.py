@@ -30,6 +30,7 @@ def get_train_test_iterators(dataset,
         if group_keyword are provided, dataset must be a .h5 file. group_keyword is expected in the path of the datasets, after validation_selection_name or training_selection_name.
     center_range : list
         [min center, max center] for normalization in data augmentation. When several groups are defined, one array per group should be given.
+        if None: image is normalized in a random range [min, max] so that min € [0, 1], max € [0, 1] and max-min<=0.1
     scale_range : list
         [min scale, max scale] for normalization in data augmentation. When several groups are defined, one array per group should be given.
     group_keyword : list
@@ -79,15 +80,24 @@ def get_train_test_iterators(dataset,
         idx = [off + z_step*i for i in range(n_z)]
         return idx
     if group_keyword is not None and isinstance(group_keyword, (list, tuple)):
-        assert len(center_range)==len(group_keyword) and len(scale_range)==len(group_keyword), "when several groups are provided, as many center_range / center_range arrays should be provided"
-        for i in range(len(group_keyword)):
-            assert len(center_range[i])==2 and len(scale_range[i])==2, "invalid scale_range / center_range"
         assert group_proportion is None or len(group_proportion)==len(group_keyword)
-        scale_fun = [[get_normalization_fun(center_range[i], scale_range[i]), None] for i in range(len(group_keyword))]
+        if center_range is not None:
+            assert len(center_range)==len(group_keyword) and len(scale_range)==len(group_keyword), "when several groups are provided, as many center_range / center_range arrays should be provided"
+            for i in range(len(group_keyword)):
+                assert len(center_range[i])==2 and len(scale_range[i])==2 and scale_range[i][0]<=scale_range[i][1], "invalid scale_range / center_range"
+            scale_fun = [[get_normalization_fun(center_range[i], scale_range[i]), None] for i in range(len(group_keyword))]
+        else:
+            scale_fun = [[get_phase_contrast_normalization_fun(), None] for i in range(len(group_keyword))]
         validation_grp = [_join_grp_kw(validation_selection_name, kw) for kw in group_keyword]
         training_grp = [_join_grp_kw(training_selection_name, kw) for kw in group_keyword]
     else:
-        scale_fun = [[get_normalization_fun(center_range, scale_range), None]]
+        if center_range is not None:
+            assert scale_range is not None
+            assert len(center_range)==2 and center_range[0]<=center_range[1], "invalid center_range"
+            assert len(scale_range)==2 and scale_range[0]<=scale_range[1], "invalid scale_range"
+            scale_fun = [[get_normalization_fun(center_range, scale_range), None]]
+        else:
+            scale_fun = [[get_phase_contrast_normalization_fun(), None]]
         if group_keyword is None:
             validation_grp = validation_selection_name
             training_grp = training_selection_name

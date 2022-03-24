@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="TaLiSSman",
-    version="0.0.1",
+    version="0.0.2",
     author="Jean Ollion",
     author_email="jean.ollion@polytechnique.org",
     description="Segmentation of bacteria growing in agar-pads, imaged by transmitted light stacks",

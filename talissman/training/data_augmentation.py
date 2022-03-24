@@ -5,6 +5,8 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 from ..model.utils import ensure_multiplicity
 
+IMAGE_TYPE = ["TRANSMITTED LIGHT", "FLUORESCENCE", "PHASE CONTRAST"]
+
 def get_normalization_center_scale_ranges(histogram, bins, center_centile_extent, scale_centile_range, verbose=False):
     assert dih is not None, "dataset_iterator package is required for this method"
     mode_value = dih.get_modal_value(histogram, bins)
@@ -23,7 +25,7 @@ def get_normalization_center_scale_ranges(histogram, bins, center_centile_extent
         print("normalization_center_scale: modal value: {}, center_range: [{}; {}] scale_range: [{}; {}]".format(mode_value, mode_range[0], mode_range[1], scale_range[0], scale_range[1]))
     return mode_range, scale_range
 
-def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:bool=False, tl_sd_factor:float=3., fluo_centile_range:list=[75, 99.9], fluo_centile_extent:float=5):
+def get_center_scale_range(dataset, raw_feature_name:str = "/raw", image_type:str=IMAGE_TYPE[0], tl_sd_factor:float=3., fluo_centile_range:list=[75, 99.9], fluo_centile_extent:float=5):
     """Computes a range for center and for scale factor for data augmentation.
     Image can then be normalized using a random center C in the center range and a random scaling factor in the scale range: I -> (I - C) / S
 
@@ -32,11 +34,12 @@ def get_center_scale_range(dataset, raw_feature_name:str = "/raw", fluoresence:b
     dataset : datasetIO/path(str) OR list/tuple of datasetIO/path(str)
     raw_feature_name : str
         name of the dataset
-    fluoresence : bool
-        in fluoresence mode (true):
+    image_type : str in ["TRANSMITTED LIGHT", "FLUORESCENCE", "PHASE CONTRAST"]
+        in fluoresence mode:
             mode M is computed, corresponding to the Mp centile: M = centile(Mp). center_range = [centile(Mp-fluo_centile_extent), centile(Mp+fluo_centile_extent)]
             scale_range = [centile(fluo_centile_range[0]) - M, centile(fluo_centile_range[0]) + M ]
-        in transmitted light mode (false): center_range = [mean - tl_sd_factor*sd, mean + tl_sd_factor*sd]; scale_range = [sd/tl_sd_factor., sd*tl_sd_factor]
+        in transmitted light mode: center_range = [mean - tl_sd_factor*sd, mean + tl_sd_factor*sd]; scale_range = [sd/tl_sd_factor., sd*tl_sd_factor]
+        in phase contrast mode:
     tl_sd_factor : float
         Description of parameter `tl_sd_factor`.
     fluo_centile_range : list
@@ -140,6 +143,57 @@ def get_normalization_fun(center_range:list, scale_range:list):
         scale = uniform(scale_range[0], scale_range[1])
         return (img - center) / scale
     return img_fun
+
+def adjust_histogram_range(img, min:float=0, max:float=1, initial_range:list=None):
+    """Adjust intensity distribution range by a linear transformation to [min, max].
+
+    Parameters
+    ----------
+    img : numpy array
+        image to normalize
+    min : float
+        minimal value of target range
+    max : float
+        maximal value of target range
+    initial_range : type
+        intensity range of img
+
+    Returns
+    -------
+    type
+        numpy nd array with intensity in range [min, max]
+
+    """
+    if initial_range is None:
+        initial_range=[img.min(), img.max()]
+    return np.interp(img, initial_range, (min, max))
+
+def get_phase_contrast_normalization_fun(min_range:float=0.1, range:list=[0,1]):
+    """Adjust image range to a randomly drown range.
+
+    Parameters
+    ----------
+    min_range : float
+        contraint on target range: max-min >= min_range
+    range : list
+        range (min, max) in which target range is drawn
+
+    Returns
+    -------
+    callable that inputs a numpy array
+        normalization function
+
+    """
+
+    if range[1]-range[0]<min_range:
+        raise ValueError("Range must be superior to min_range")
+
+    def img_fun(img):
+        vmin = uniform(range[0], range[1]-min_range)
+        vmax = uniform(vmin+min_range, range[1])
+        return adjust_histogram_range(img, vmin, vmax)
+    return img_fun
+
 ################### helpers ##################################
 
 def is_list(l):
