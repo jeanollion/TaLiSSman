@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="TaLiSSman",
-    version="0.0.2",
+    version="0.0.3",
     author="Jean Ollion",
     author_email="jean.ollion@polytechnique.org",
     description="Segmentation of bacteria growing in agar-pads, imaged by transmitted light stacks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jeanollion/talissman",
-    download_url = 'https://github.com/jeanollion/TaLiSSman/archive/v0.0.1.tar.gz',
+    download_url = 'https://github.com/jeanollion/TaLiSSman/archive/0.0.3.tar.gz',
     packages=setuptools.find_packages(),
     keywords = ['Segmentation', 'Bacteria', 'Transmitted Light', 'Bright Field', 'Stack', 'Microscopy'],
     classifiers=[
